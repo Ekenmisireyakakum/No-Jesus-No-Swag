@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import supabase from '../config/db.js';
 import { signToken } from '../utils/jwt.js';
