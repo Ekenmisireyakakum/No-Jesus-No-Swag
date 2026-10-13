@@ -1,4 +1,5 @@
-const API = 'http://127.0.0.1:4000/api';
+const isLocal = location.hostname === '127.0.0.1' || location.hostname === 'localhost';
+const API = isLocal ? 'http://127.0.0.1:4000/api' : '/api';
 
 function getToken() {
   return localStorage.getItem('njns_token');

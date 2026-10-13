@@ -1,4 +1,4 @@
-import { request, getUser, saveSession, clearSession } from './api.js';
+import { request, getUser, saveSession, clearSession } from './client-api.js';
 
 let countdownInterval = null;
 
