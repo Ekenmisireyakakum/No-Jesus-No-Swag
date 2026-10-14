@@ -51,7 +51,7 @@ app.use(limiter);
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: false }));
 
-app.get('/health', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'NO JESUS NO SWAG API is running' });
 });
 
