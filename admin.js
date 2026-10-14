@@ -1,5 +1,5 @@
 const isLocal = location.hostname === '127.0.0.1' || location.hostname === 'localhost';
-const API = isLocal ? 'http://127.0.0.1:4000/api' : '/api';
+const API = isLocal ? 'http://127.0.0.1:4000/api' : 'https://no-jesus-no-swag-api.vercel.app/api';
 
 let adminToken = null;
 let adminUser = null;

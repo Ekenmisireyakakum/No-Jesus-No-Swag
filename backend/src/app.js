@@ -26,6 +26,7 @@ app.use(cors({
     'https://no-jesus-no-swag.vercel.app',
     'https://no-jesus-no-swag-frontend.vercel.app',
     'https://no-jesus-no-swag-admin.vercel.app',
+    'https://no-jesus-no-swag-ekenmisireyakakums-projects.vercel.app',
     process.env.FRONTEND_URL,
   ].filter(Boolean),
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
