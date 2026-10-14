@@ -193,3 +193,27 @@ export const getStats = catchAsync(async (req, res, next) => {
     totalCapacity: concert ? concert.total_capacity : 0,
   });
 });
+
+export const deleteUser = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+
+  const { data: user } = await supabase
+    .from('users')
+    .select('id, role')
+    .eq('id', id)
+    .single();
+
+  if (!user) return next(new AppError('User not found', 404));
+
+  if (user.role === 'ADMIN') {
+    return next(new AppError('Cannot delete an admin account', 403));
+  }
+
+  await supabase.from('tickets').delete().eq('user_id', id);
+
+  const { error } = await supabase.from('users').delete().eq('id', id);
+
+  if (error) return next(new AppError('Failed to delete user', 500));
+
+  ok(res, { message: 'User deleted successfully' });
+});

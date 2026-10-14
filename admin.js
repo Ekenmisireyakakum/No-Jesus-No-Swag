@@ -207,6 +207,21 @@ function buildResultCard(user) {
     actions.appendChild(viewBtn);
   }
 
+  const deleteBtn = document.createElement('button');
+  deleteBtn.className = 'btn-danger btn-sm';
+  deleteBtn.textContent = 'Delete User';
+  deleteBtn.onclick = async function() {
+    if (!confirm('Delete ' + user.name + '? This removes their account and tickets permanently.')) return;
+    try {
+      await api('/admin/users/' + user.id, { method: 'DELETE' });
+      showToast('User deleted');
+      card.remove();
+    } catch (e) {
+      showToast(e.message, 'error');
+    }
+  };
+  actions.appendChild(deleteBtn);
+
   card.appendChild(info);
   card.appendChild(actions);
   return card;

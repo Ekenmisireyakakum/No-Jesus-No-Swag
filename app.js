@@ -123,7 +123,6 @@ async function checkIfRegistered(concertId) {
     return null;
   }
 }
-
 async function renderRegistrationCard(concert) {
   var card = document.getElementById('registration-card');
   var user = getUser();
@@ -146,37 +145,15 @@ async function renderRegistrationCard(concert) {
   var ticket = await checkIfRegistered(concert.id);
   var initial = user.name ? user.name[0].toUpperCase() : '?';
 
-  if (ticket && ticket.status === 'PENDING') {
-    card.innerHTML =
-      '<div class="reg-card__avatar">' + initial + '</div>' +
-      '<div class="reg-card__body">' +
-        '<p class="reg-card__title">Registration Received</p>' +
-        '<p class="reg-card__sub">Your seat and meal will be assigned by the admin. Check back soon.</p>' +
-      '</div>' +
-      '<div class="reg-card__actions">' +
-        '<button class="reg-btn" id="cancel-reg-btn">Cancel Registration</button>' +
-      '</div>';
+  if (user) {
+    var seatInfo = ticket.seat_number ? ' &nbsp;·&nbsp; Seat <strong>' + ticket.seat_number + '</strong>' : '';
+    var mealInfo = ticket.meal_option && ticket.meal_option !== 'none' ? ' &nbsp;·&nbsp; Meal: <strong>' + ticket.meal_option + '</strong>' : '';
 
-    document.getElementById('cancel-reg-btn').onclick = async function() {
-      if (!confirm('Cancel your registration?')) return;
-      try {
-        await request('/tickets/' + ticket.id, { method: 'DELETE' });
-        showToast('Registration cancelled');
-        renderRegistrationCard(concert);
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
-    };
-
-  } else if (ticket && ticket.status === 'CONFIRMED') {
     card.innerHTML =
       '<div class="reg-card__avatar">' + initial + '</div>' +
       '<div class="reg-card__body">' +
         '<p class="reg-card__title">You\'re In</p>' +
-        '<p class="reg-card__sub">Registered as <strong>' + (user.interest || 'Attendee') + '</strong>' +
-        (ticket.seat_number ? ' &nbsp;·&nbsp; Seat <strong>' + ticket.seat_number + '</strong>' : '') +
-        (ticket.meal_option && ticket.meal_option !== 'none' ? ' &nbsp;·&nbsp; Meal: <strong>' + ticket.meal_option + '</strong>' : '') +
-        '</p>' +
+        '<p class="reg-card__sub">Registered as <strong>' + (user.interest || 'Attendee') + '</strong>' + seatInfo + mealInfo + '</p>' +
       '</div>' +
       '<div class="countdown-wrap">' +
         '<p class="countdown-heading">Concert starts in</p>' +
@@ -198,6 +175,20 @@ async function renderRegistrationCard(concert) {
     document.getElementById('calendar-btn').onclick = function() {
       var d = new Date(concert.date_time);
       var start = d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      var end = new Date(d.getTime() + 3 * 60 * 60 * 1000).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      window.open('https://calendar.google.com/calendar/render?action=TEMPLATE&text=' +
+        encodeURIComponent(concert.title) + '&dates=' + start + '/' + end +
+        '&location=' + encodeURIComponent(concert.venue_name), '_blank');
+    };
+
+    document.getElementById('share-btn').onclick = function() {
+      if (navigator.share) {
+        navigator.share({ title: concert.title, url: location.href });
+      } else {
+        navigator.clipboard.writeText(location.href);
+        showToast('Link copied!');
+      }
+    };
       var end = new Date(d.getTime() + 3 * 60 * 60 * 1000).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
       window.open('https://calendar.google.com/calendar/render?action=TEMPLATE&text=' +
         encodeURIComponent(concert.title) + '&dates=' + start + '/' + end +
@@ -260,17 +251,7 @@ function bindModal() {
       updateNav();
 
       var concert = await loadConcert();
-
-      if (concert) {
-        await request('/tickets', {
-          method: 'POST',
-          body: JSON.stringify({ concertId: concert.id }),
-        });
-        showToast('Welcome, ' + data.user.name + '! Registration received — your seat will be assigned soon.');
-      } else {
-        showToast('Welcome, ' + data.user.name + '!');
-      }
-
+      showToast('Welcome, ' + data.user.name + '! You\'re registered.');
       renderRegistrationCard(concert);
     } catch (err) {
       errEl.textContent = err.message;
