@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import supabase from '../config/db.js';
-import { generateQrPayload } from '../utils/qr.js';
 import { ok } from '../utils/response.js';
 import { AppError, catchAsync } from '../middleware/errorHandler.js';
 
@@ -33,13 +32,10 @@ export const bookTicket = catchAsync(async (req, res, next) => {
     .select('id, status')
     .eq('user_id', userId)
     .eq('concert_id', concertId)
-    .single();
+    .maybeSingle();
 
   if (existing) {
-    if (existing.status === 'CONFIRMED') {
-      return next(new AppError('You are already registered for this concert', 409));
-    }
-    return next(new AppError('You previously cancelled this ticket', 422));
+    return next(new AppError('You are already registered for this concert', 409));
   }
 
   const { error: slotError } = await supabase
@@ -50,28 +46,26 @@ export const bookTicket = catchAsync(async (req, res, next) => {
 
   if (slotError) return next(new AppError('Could not reserve slot — please try again', 409));
 
-  const qrCodeData = generateQrPayload(userId, concertId);
-
-  const { data: ticket, error: ticketError } = await supabase
+  const { data: registration, error: regError } = await supabase
     .from('tickets')
     .insert({
       user_id: userId,
       concert_id: concertId,
-      qr_code_data: qrCodeData,
-      status: 'CONFIRMED',
+      qr_code_data: 'PENDING',
+      status: 'PENDING',
     })
-    .select('*, concert:concerts(title, artist, venue_name, venue_address, date_time)')
+    .select()
     .single();
 
-  if (ticketError) {
+  if (regError) {
     await supabase
       .from('concerts')
       .update({ available_slots: concert.available_slots })
       .eq('id', concertId);
-    return next(new AppError('Failed to create ticket', 500));
+    return next(new AppError('Failed to register', 500));
   }
 
-  ok(res, ticket, 201);
+  ok(res, { registration, message: 'Registration received. Your seat and meal will be assigned by the admin.' }, 201);
 });
 
 export const getMyTickets = catchAsync(async (req, res, next) => {
@@ -113,5 +107,5 @@ export const cancelTicket = catchAsync(async (req, res, next) => {
       .eq('id', ticket.concert_id);
   }
 
-  ok(res, { message: 'Ticket cancelled and slot restored' });
+  ok(res, { message: 'Registration cancelled' });
 });

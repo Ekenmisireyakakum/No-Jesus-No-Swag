@@ -6,13 +6,11 @@ function showToast(message, type) {
   const toast = document.getElementById('toast');
   toast.textContent = message;
   toast.className = 'toast toast--' + (type || 'success');
-
   requestAnimationFrame(function() {
     requestAnimationFrame(function() {
       toast.classList.add('toast--visible');
     });
   });
-
   clearTimeout(toast._timer);
   toast._timer = setTimeout(function() {
     toast.classList.remove('toast--visible');
@@ -118,7 +116,9 @@ async function loadConcert() {
 async function checkIfRegistered(concertId) {
   try {
     var tickets = await request('/tickets/my-tickets');
-    return tickets.find(function(t) { return t.concert_id === concertId && t.status === 'CONFIRMED'; }) || null;
+    return tickets.find(function(t) {
+      return t.concert_id === concertId && (t.status === 'CONFIRMED' || t.status === 'PENDING');
+    }) || null;
   } catch {
     return null;
   }
@@ -146,12 +146,37 @@ async function renderRegistrationCard(concert) {
   var ticket = await checkIfRegistered(concert.id);
   var initial = user.name ? user.name[0].toUpperCase() : '?';
 
-  if (ticket) {
+  if (ticket && ticket.status === 'PENDING') {
+    card.innerHTML =
+      '<div class="reg-card__avatar">' + initial + '</div>' +
+      '<div class="reg-card__body">' +
+        '<p class="reg-card__title">Registration Received</p>' +
+        '<p class="reg-card__sub">Your seat and meal will be assigned by the admin. Check back soon.</p>' +
+      '</div>' +
+      '<div class="reg-card__actions">' +
+        '<button class="reg-btn" id="cancel-reg-btn">Cancel Registration</button>' +
+      '</div>';
+
+    document.getElementById('cancel-reg-btn').onclick = async function() {
+      if (!confirm('Cancel your registration?')) return;
+      try {
+        await request('/tickets/' + ticket.id, { method: 'DELETE' });
+        showToast('Registration cancelled');
+        renderRegistrationCard(concert);
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    };
+
+  } else if (ticket && ticket.status === 'CONFIRMED') {
     card.innerHTML =
       '<div class="reg-card__avatar">' + initial + '</div>' +
       '<div class="reg-card__body">' +
         '<p class="reg-card__title">You\'re In</p>' +
-        '<p class="reg-card__sub">Registered as <strong>' + (user.interest || 'Attendee') + '</strong></p>' +
+        '<p class="reg-card__sub">Registered as <strong>' + (user.interest || 'Attendee') + '</strong>' +
+        (ticket.seat_number ? ' &nbsp;·&nbsp; Seat <strong>' + ticket.seat_number + '</strong>' : '') +
+        (ticket.meal_option && ticket.meal_option !== 'none' ? ' &nbsp;·&nbsp; Meal: <strong>' + ticket.meal_option + '</strong>' : '') +
+        '</p>' +
       '</div>' +
       '<div class="countdown-wrap">' +
         '<p class="countdown-heading">Concert starts in</p>' +
@@ -198,9 +223,7 @@ async function renderRegistrationCard(concert) {
       '<button class="btn-primary btn-full" id="book-btn"' + (full ? ' disabled' : '') + '>' + (full ? 'Fully Booked' : 'Register for Free') + '</button>';
 
     if (!full) {
-      document.getElementById('book-btn').onclick = function() {
-        openModal();
-      };
+      document.getElementById('book-btn').onclick = function() { openModal(); };
     }
   }
 }
@@ -235,7 +258,6 @@ function bindModal() {
       saveSession(data.user, data.token);
       closeModal();
       updateNav();
-      showToast('Welcome, ' + data.user.name + '! You\'re registered.');
 
       var concert = await loadConcert();
 
@@ -244,6 +266,9 @@ function bindModal() {
           method: 'POST',
           body: JSON.stringify({ concertId: concert.id }),
         });
+        showToast('Welcome, ' + data.user.name + '! Registration received — your seat will be assigned soon.');
+      } else {
+        showToast('Welcome, ' + data.user.name + '!');
       }
 
       renderRegistrationCard(concert);

@@ -64,9 +64,8 @@ async function loadStats() {
     const stats = await api('/admin/stats');
     document.getElementById('stat-users').textContent = stats.totalUsers;
     document.getElementById('stat-tickets').textContent = stats.totalTickets;
-    document.getElementById('stat-admin').textContent = stats.adminIssued;
-    document.getElementById('stat-spots').textContent = stats.spotsLeft + ' / ' + stats.totalCapacity;
-  } catch(e) {
+    document.getElementById('stat-admin').textContent = stats.pendingRegistrations;
+    document.getElementById('stat-spots').textContent = stats.spotsLeft + ' / ' + stats.totalCapacity;  } catch(e) {
     showToast(e.message, 'error');
   }
 }

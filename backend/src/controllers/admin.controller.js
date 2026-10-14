@@ -29,12 +29,6 @@ export const lookupUser = catchAsync(async (req, res, next) => {
       .select('id, qr_code_data, status, seat_number, meal_option, issued_by_admin, issued_at, registered_at, concert_id')
       .eq('user_id', user.id);
 
-    const { data: registrations } = await supabase
-      .from('tickets')
-      .select('concert_id')
-      .eq('user_id', user.id)
-      .limit(1);
-
     results.push({
       ...user,
       tickets: tickets || [],
@@ -98,15 +92,14 @@ export const generateAdminTicket = catchAsync(async (req, res, next) => {
     .maybeSingle();
 
   if (seatTaken) {
-    return next(new AppError(`Seat ${seatNumber} is already taken`, 409));
+    return next(new AppError('Seat ' + seatNumber + ' is already taken', 409));
   }
 
   const qrCodeData = generateQrPayload(userId, concertId);
-
   let ticket;
 
-  if (existing && existing.status === 'CANCELLED') {
-    const { data: updated } = await supabase
+  if (existing && (existing.status === 'PENDING' || existing.status === 'CANCELLED')) {
+    const { data: updated, error: updateError } = await supabase
       .from('tickets')
       .update({
         status: 'CONFIRMED',
@@ -119,9 +112,11 @@ export const generateAdminTicket = catchAsync(async (req, res, next) => {
       .eq('id', existing.id)
       .select()
       .single();
+
+    if (updateError) return next(new AppError('Failed to update ticket', 500));
     ticket = updated;
   } else {
-    const { data: reg } = await supabase
+    const { data: reg, error: insertError } = await supabase
       .from('tickets')
       .insert({
         user_id: userId,
@@ -135,6 +130,8 @@ export const generateAdminTicket = catchAsync(async (req, res, next) => {
       })
       .select()
       .single();
+
+    if (insertError) return next(new AppError('Failed to create ticket', 500));
     ticket = reg;
 
     if (concert.available_slots > 0) {
@@ -169,6 +166,11 @@ export const getStats = catchAsync(async (req, res, next) => {
     .select('id', { count: 'exact', head: true })
     .eq('status', 'CONFIRMED');
 
+  const { count: pendingCount } = await supabase
+    .from('tickets')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'PENDING');
+
   const { count: adminIssued } = await supabase
     .from('tickets')
     .select('id', { count: 'exact', head: true })
@@ -185,6 +187,7 @@ export const getStats = catchAsync(async (req, res, next) => {
   ok(res, {
     totalUsers: totalUsers || 0,
     totalTickets: totalTickets || 0,
+    pendingRegistrations: pendingCount || 0,
     adminIssued: adminIssued || 0,
     spotsLeft: concert ? concert.available_slots : 0,
     totalCapacity: concert ? concert.total_capacity : 0,
