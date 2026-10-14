@@ -174,13 +174,13 @@
         <input type="hidden" id="issue-user-id" />
         <input type="hidden" id="issue-concert-id" />
         <div class="form-group">
-          <label for="issue-seat">Seat Number</label>
-          <input type="text" id="issue-seat" class="form-input" placeholder="e.g. A12, B03" required />
+          <label for="issue-seat">Seat Number <span style="color:#dc2626">*</span></label>
+          <input type="text" id="issue-seat" class="form-input" placeholder="e.g. A12, B03" autocomplete="off" />
         </div>
         <div class="form-group">
-          <label for="issue-meal">Meal Option</label>
-          <select id="issue-meal" class="form-input form-select" required>
-            <option value="" disabled selected>Select meal…</option>
+          <label for="issue-meal">Meal Option <span style="color:#dc2626">*</span></label>
+          <select id="issue-meal" class="form-input form-select">
+            <option value="">— Select meal option —</option>
             <option value="standard">Standard</option>
             <option value="vegetarian">Vegetarian</option>
             <option value="vegan">Vegan</option>

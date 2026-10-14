@@ -294,6 +294,20 @@ function bindIssueForm() {
     const btn = document.getElementById('issue-submit');
     const errEl = document.getElementById('issue-error');
     errEl.textContent = '';
+
+    const seat = document.getElementById('issue-seat').value.trim();
+    const meal = document.getElementById('issue-meal').value;
+
+    if (!seat) {
+      errEl.textContent = 'Please enter a seat number.';
+      return;
+    }
+
+    if (!meal) {
+      errEl.textContent = 'Please select a meal option.';
+      return;
+    }
+
     btn.disabled = true;
     btn.textContent = 'Generating…';
 
@@ -303,8 +317,8 @@ function bindIssueForm() {
         body: JSON.stringify({
           userId: document.getElementById('issue-user-id').value,
           concertId: document.getElementById('issue-concert-id').value,
-          seatNumber: document.getElementById('issue-seat').value.trim(),
-          mealOption: document.getElementById('issue-meal').value,
+          seatNumber: seat,
+          mealOption: meal,
         }),
       });
 
