@@ -24,6 +24,8 @@ app.use(cors({
     'http://localhost:5501',
     'http://127.0.0.1:5501',
     'https://no-jesus-no-swag.vercel.app',
+    'https://no-jesus-no-swag-frontend.vercel.app',
+    'https://no-jesus-no-swag-admin.vercel.app',
     process.env.FRONTEND_URL,
   ].filter(Boolean),
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

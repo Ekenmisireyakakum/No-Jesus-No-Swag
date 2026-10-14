@@ -1,12 +1,11 @@
 {
   "name": "njns-backend",
   "version": "1.0.0",
-  "description": "NO JESUS NO SWAG — Concert ticketing API",
-  "main": "src/index.js",
   "type": "module",
   "scripts": {
     "dev": "node --watch src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "build": "echo 'No build step'"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
