@@ -7,7 +7,7 @@ import authRoutes from './routes/auth.routes.js';
 import concertRoutes from './routes/concert.routes.js';
 import ticketRoutes from './routes/ticket.routes.js';
 import adminRoutes from './routes/admin.routes.js';
-import { errorHandler, notFound } from './middleware/errorHandler.js';
+import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
 
@@ -60,7 +60,6 @@ app.use('/api/concerts', concertRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/admin', adminRoutes);
 
-app.use(notFound);
 app.use(errorHandler);
 
 export default app;

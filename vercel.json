@@ -1,51 +1,5 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "api/index.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/style.css",
-      "dest": "/style.css"
-    },
-    {
-      "src": "/event.css",
-      "dest": "/event.css"
-    },
-    {
-      "src": "/admin.css",
-      "dest": "/admin.css"
-    },
-    {
-      "src": "/app.js",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/client-api.js",
-      "dest": "/client-api.js"
-    },
-    {
-      "src": "/admin.js",
-      "dest": "/admin.js"
-    },
-    {
-      "src": "/admin.html",
-      "dest": "/admin.html"
-    },
-    {
-      "src": "/index.html",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/index.js" }
   ]
 }
