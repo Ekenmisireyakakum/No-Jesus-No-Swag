@@ -80,9 +80,9 @@ async function loadAllTickets() {
   const container = document.getElementById('tickets-list');
   container.innerHTML = '<p class="empty-msg">Loading…</p>';
   try {
-    const tickets = await api('/admin/tickets');
-    if (!tickets || tickets.length === 0) {
-      container.innerHTML = '<p class="empty-msg">No tickets issued yet.</p>';
+    const registrations = await api('/admin/tickets');
+    if (!registrations || registrations.length === 0) {
+      container.innerHTML = '<p class="empty-msg">No registrations yet.</p>';
       return;
     }
 
@@ -91,25 +91,65 @@ async function loadAllTickets() {
     table.innerHTML =
       '<thead><tr>' +
         '<th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Interest</th>' +
-        '<th>Seat</th><th>Meal</th><th>Source</th><th></th>' +
+        '<th>Seat</th><th>Meal</th><th>Status</th><th></th>' +
       '</tr></thead>';
 
     const tbody = document.createElement('tbody');
-    tickets.forEach(function(t, i) {
+    registrations.forEach(function(r, i) {
+      const ticket = r.ticket;
       const tr = document.createElement('tr');
+
+      const statusBadge = ticket
+        ? ticket.status === 'CONFIRMED'
+          ? '<span style="background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:999px;font-size:0.72rem;font-weight:700;">Issued</span>'
+          : '<span style="background:#fef9c3;color:#92400e;padding:2px 8px;border-radius:999px;font-size:0.72rem;font-weight:700;">Pending</span>'
+        : '<span style="background:#f4f4f5;color:#71717a;padding:2px 8px;border-radius:999px;font-size:0.72rem;font-weight:700;">No Ticket</span>';
+
       tr.innerHTML =
         '<td>' + (i + 1) + '</td>' +
-        '<td><strong>' + (t.user?.name || '—') + '</strong></td>' +
-        '<td>' + (t.user?.email || '—') + '</td>' +
-        '<td>' + (t.user?.phone || '—') + '</td>' +
-        '<td>' + (t.user?.interest || '—') + '</td>' +
-        '<td>' + (t.seat_number || '—') + '</td>' +
-        '<td>' + (t.meal_option || '—') + '</td>' +
-        '<td>' + (t.issued_by_admin ? 'Admin' : 'Self') + '</td>' +
-        '<td><button class="btn-secondary btn-sm view-ticket-btn" data-id="' + t.id + '">View</button></td>';
-      tr.querySelector('.view-ticket-btn').onclick = function() {
-        openTicketModal(t);
+        '<td><strong>' + r.name + '</strong></td>' +
+        '<td>' + r.email + '</td>' +
+        '<td>' + (r.phone || '—') + '</td>' +
+        '<td>' + (r.interest || '—') + '</td>' +
+        '<td>' + (ticket?.seat_number || '—') + '</td>' +
+        '<td>' + (ticket?.meal_option || '—') + '</td>' +
+        '<td>' + statusBadge + '</td>' +
+        '<td></td>';
+
+      const actionCell = tr.querySelector('td:last-child');
+
+      if (ticket && ticket.status === 'CONFIRMED') {
+        const viewBtn = document.createElement('button');
+        viewBtn.className = 'btn-secondary btn-sm';
+        viewBtn.textContent = 'View';
+        viewBtn.onclick = function() {
+          openTicketModal({ ...ticket, user: r, concert: r.concert });
+        };
+        actionCell.appendChild(viewBtn);
+      } else {
+        const issueBtn = document.createElement('button');
+        issueBtn.className = 'btn-primary btn-sm';
+        issueBtn.textContent = 'Issue Ticket';
+        issueBtn.onclick = function() { openIssueModal(r); };
+        actionCell.appendChild(issueBtn);
+      }
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'btn-danger btn-sm';
+      deleteBtn.style.marginLeft = '4px';
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.onclick = async function() {
+        if (!confirm('Delete ' + r.name + '?')) return;
+        try {
+          await api('/admin/users/' + r.id, { method: 'DELETE' });
+          showToast('User deleted');
+          tr.remove();
+        } catch(e) {
+          showToast(e.message, 'error');
+        }
       };
+      actionCell.appendChild(deleteBtn);
+
       tbody.appendChild(tr);
     });
 
@@ -120,7 +160,7 @@ async function loadAllTickets() {
     wrap.appendChild(table);
     container.appendChild(wrap);
   } catch(e) {
-    container.innerHTML = '<p class="empty-msg">Failed to load tickets.</p>';
+    container.innerHTML = '<p class="empty-msg">Failed to load registrations.</p>';
     showToast(e.message, 'error');
   }
 }

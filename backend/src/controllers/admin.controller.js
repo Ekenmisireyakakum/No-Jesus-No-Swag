@@ -146,14 +146,28 @@ export const generateAdminTicket = catchAsync(async (req, res, next) => {
 });
 
 export const listTickets = catchAsync(async (req, res, next) => {
-  const { data: tickets, error } = await supabase
-    .from('tickets')
-    .select('*, user:users(name, email, phone, interest), concert:concerts(title, venue_name, date_time)')
-    .eq('status', 'CONFIRMED')
-    .order('issued_at', { ascending: false });
+  const { data: users, error } = await supabase
+    .from('users')
+    .select('id, name, email, phone, interest, role, created_at')
+    .eq('role', 'USER')
+    .order('created_at', { ascending: false });
 
-  if (error) return next(new AppError('Failed to fetch tickets', 500));
-  ok(res, tickets);
+  if (error) return next(new AppError('Failed to fetch registrations', 500));
+
+  const concert = (await supabase.from('concerts').select('id, title, venue_name, date_time').limit(1)).data?.[0];
+
+  const results = [];
+  for (const user of users || []) {
+    const { data: ticket } = await supabase
+      .from('tickets')
+      .select('id, status, seat_number, meal_option, qr_code_data, issued_at')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    results.push({ ...user, ticket: ticket || null, concert });
+  }
+
+  ok(res, results);
 });
 
 export const getStats = catchAsync(async (req, res, next) => {
