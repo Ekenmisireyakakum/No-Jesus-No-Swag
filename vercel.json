@@ -1,21 +1,27 @@
 {
   "version": 2,
+  "builds": [
+    {
+      "src": "api/index.js",
+      "use": "@vercel/node"
+    }
+  ],
   "routes": [
     {
       "src": "/api/(.*)",
       "dest": "/api/index.js"
     },
     {
-      "src": "/admin.html",
-      "dest": "/admin.html"
+      "src": "/style.css",
+      "dest": "/style.css"
+    },
+    {
+      "src": "/event.css",
+      "dest": "/event.css"
     },
     {
       "src": "/admin.css",
       "dest": "/admin.css"
-    },
-    {
-      "src": "/admin.js",
-      "dest": "/admin.js"
     },
     {
       "src": "/app.js",
@@ -26,12 +32,16 @@
       "dest": "/client-api.js"
     },
     {
-      "src": "/style.css",
-      "dest": "/style.css"
+      "src": "/admin.js",
+      "dest": "/admin.js"
     },
     {
-      "src": "/event.css",
-      "dest": "/event.css"
+      "src": "/admin.html",
+      "dest": "/admin.html"
+    },
+    {
+      "src": "/index.html",
+      "dest": "/index.html"
     },
     {
       "src": "/(.*)",
