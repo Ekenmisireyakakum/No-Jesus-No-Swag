@@ -231,8 +231,8 @@ function openTicketModal(ticket) {
   const concert = ticket.concert || currentConcert || {};
 
   const d = concert.date_time ? new Date(concert.date_time) : null;
-  const dateStr = d ? d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : '—';
-  const timeStr = d ? d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '—';
+  const dateStr = d ? d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Africa/Lagos' }) : '—';
+  const timeStr = d ? d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos' }) : '—';
 
   content.innerHTML =
     '<div class="printable-ticket">' +

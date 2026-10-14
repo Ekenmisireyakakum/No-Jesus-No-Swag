@@ -101,10 +101,10 @@ async function loadConcert() {
     var d = new Date(concert.date_time);
 
     document.getElementById('event-title').textContent = concert.title;
-    document.getElementById('event-month').textContent = d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-    document.getElementById('event-day').textContent = d.getDate();
-    document.getElementById('event-date-main').textContent = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-    document.getElementById('event-time').textContent = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('event-month').textContent = d.toLocaleDateString('en-US', { month: 'short', timeZone: 'Africa/Lagos' }).toUpperCase();
+    document.getElementById('event-day').textContent = d.toLocaleDateString('en-US', { day: 'numeric', timeZone: 'Africa/Lagos' });
+    document.getElementById('event-date-main').textContent = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'Africa/Lagos' });
+    document.getElementById('event-time').textContent = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos' });
     document.getElementById('event-location').textContent = concert.venue_name + ', ' + concert.venue_address;
     if (concert.image_url) document.getElementById('event-poster').src = concert.image_url;
     if (concert.description) document.getElementById('event-description').textContent = concert.description;
