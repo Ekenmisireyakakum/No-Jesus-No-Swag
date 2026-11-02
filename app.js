@@ -87,8 +87,13 @@ async function loadConcert() {
     document.getElementById('event-day').textContent = d.toLocaleDateString('en-US', { day: 'numeric', timeZone: 'Africa/Lagos' });
     document.getElementById('event-date-main').textContent = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'Africa/Lagos' });
     document.getElementById('event-location').textContent = concert.venue_name + ', ' + concert.venue_address;
-    if (concert.image_url) document.getElementById('event-poster').src = concert.image_url;
-    if (concert.description) document.getElementById('event-description').textContent = concert.description;
+    var poster = document.getElementById('event-poster');
+    if (concert.image_url) {
+      poster.src = concert.image_url;
+    } else {
+      poster.src = 'images/Main.jpeg';
+    }
+    if (concert.description) document.getElementById('event-description') && (document.getElementById('event-description').textContent = concert.description);
     return concert;
   } catch (e) {
     console.error(e);
