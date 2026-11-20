@@ -91,13 +91,16 @@ async function loadAllTickets() {
     table.innerHTML =
       '<thead><tr>' +
         '<th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Interest</th>' +
-        '<th>Seat</th><th>Meal</th><th>Status</th><th></th>' +
+        '<th>Registered</th><th>Seat</th><th>Meal</th><th>Status</th><th></th>' +
       '</tr></thead>';
 
     const tbody = document.createElement('tbody');
     registrations.forEach(function(r, i) {
       const ticket = r.ticket;
       const tr = document.createElement('tr');
+      const registeredAt = ticket && ticket.registered_at
+        ? new Date(ticket.registered_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos' })
+        : new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'Africa/Lagos' });
 
       const statusBadge = ticket
         ? ticket.status === 'CONFIRMED'
@@ -111,6 +114,7 @@ async function loadAllTickets() {
         '<td>' + r.email + '</td>' +
         '<td>' + (r.phone || '—') + '</td>' +
         '<td>' + (r.interest || '—') + '</td>' +
+        '<td style="font-size:0.8rem;color:#71717a">' + registeredAt + '</td>' +
         '<td>' + (ticket?.seat_number || '—') + '</td>' +
         '<td>' + (ticket?.meal_option || '—') + '</td>' +
         '<td>' + statusBadge + '</td>' +
@@ -475,6 +479,13 @@ async function bootAdminScreen() {
 
   const goTickets = document.getElementById('go-tickets-btn');
   if (goTickets) goTickets.onclick = function() { showTab('tickets'); };
+
+  setInterval(function() {
+    const dashTab = document.getElementById('tab-dashboard');
+    if (dashTab && dashTab.classList.contains('active')) {
+      loadStats();
+    }
+  }, 30000);
 }
 
 async function init() {

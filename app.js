@@ -213,7 +213,7 @@ function bindModal() {
       updateNav();
       var concert = await loadConcert();
       showToast('Welcome, ' + data.user.name + '! You\'re registered.');
-      renderRegistrationCard(concert);
+      await renderRegistrationCard(concert);
     } catch (err) {
       errEl.textContent = err.message;
     } finally {
