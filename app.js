@@ -1,4 +1,4 @@
-import { request, getUser, saveSession } from './client-api.js';
+import { request, getUser, saveSession, clearSession } from './client-api.js';
 
 let countdownInterval = null;
 
@@ -103,10 +103,15 @@ async function loadConcert() {
 
 async function getMyTicket(concertId) {
   try {
+    var user = getUser();
+    if (!user) return null;
     var tickets = await request('/tickets/my-tickets');
-    return tickets.find(function(t) {
-      return t.concert_id === concertId;
-    }) || null;
+    if (!tickets) {
+      clearSession();
+      updateNav();
+      return null;
+    }
+    return tickets.find(function(t) { return t.concert_id === concertId; }) || null;
   } catch {
     return null;
   }

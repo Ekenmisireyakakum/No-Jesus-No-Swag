@@ -28,6 +28,11 @@ async function request(path, options = {}) {
   const res = await fetch(`${API}${path}`, { ...options, headers });
   const json = await res.json();
 
+  if (res.status === 401) {
+    clearSession();
+    return null;
+  }
+
   if (!res.ok) throw new Error(json.message || 'Request failed');
   return json.data;
 }
