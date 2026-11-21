@@ -63,7 +63,7 @@ async function loadStats() {
   try {
     const stats = await api('/admin/stats');
     document.getElementById('stat-users').textContent = stats.totalUsers;
-    document.getElementById('stat-tickets').textContent = stats.totalTickets;
+    document.getElementById('stat-tickets').textContent = stats.totalRegistered;
     document.getElementById('stat-admin').textContent = stats.pendingRegistrations;
     document.getElementById('stat-spots').textContent = stats.spotsLeft + ' / ' + stats.totalCapacity;  } catch(e) {
     showToast(e.message, 'error');

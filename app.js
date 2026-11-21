@@ -131,8 +131,13 @@ async function renderRegistrationCard(concert) {
     card.innerHTML =
       '<p class="reg-card__title">Free Entry</p>' +
       '<p class="reg-card__sub">' + concert.available_slots + ' of ' + concert.total_capacity + ' spots available</p>' +
+      '<div class="countdown-wrap" style="margin:1rem 0">' +
+        '<p class="countdown-heading">Concert starts in</p>' +
+        '<div class="countdown-timer" id="countdown-timer"></div>' +
+      '</div>' +
       '<button class="btn-primary btn-full" id="open-register-btn">Register for Free</button>';
     document.getElementById('open-register-btn').onclick = openModal;
+    startCountdown(concert.date_time);
     return;
   }
 

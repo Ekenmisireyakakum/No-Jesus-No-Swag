@@ -173,7 +173,8 @@ export const listTickets = catchAsync(async (req, res, next) => {
 export const getStats = catchAsync(async (req, res, next) => {
   const { count: totalUsers } = await supabase
     .from('users')
-    .select('id', { count: 'exact', head: true });
+    .select('id', { count: 'exact', head: true })
+    .eq('role', 'USER');
 
   const { count: totalTickets } = await supabase
     .from('tickets')
@@ -185,26 +186,23 @@ export const getStats = catchAsync(async (req, res, next) => {
     .select('id', { count: 'exact', head: true })
     .eq('status', 'PENDING');
 
-  const { count: adminIssued } = await supabase
-    .from('tickets')
-    .select('id', { count: 'exact', head: true })
-    .eq('issued_by_admin', true)
-    .eq('status', 'CONFIRMED');
-
   const { data: concerts } = await supabase
     .from('concerts')
     .select('available_slots, total_capacity')
     .limit(1);
 
   const concert = concerts?.[0];
+  const totalCapacity = concert ? concert.total_capacity : 0;
+  const spotsLeft = concert ? concert.available_slots : 0;
+  const totalRegistered = totalCapacity - spotsLeft;
 
   ok(res, {
     totalUsers: totalUsers || 0,
+    totalRegistered,
     totalTickets: totalTickets || 0,
     pendingRegistrations: pendingCount || 0,
-    adminIssued: adminIssued || 0,
-    spotsLeft: concert ? concert.available_slots : 0,
-    totalCapacity: concert ? concert.total_capacity : 0,
+    spotsLeft,
+    totalCapacity,
   });
 });
 
