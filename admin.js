@@ -31,7 +31,11 @@ async function api(path, options = {}) {
   if (token) headers['Authorization'] = 'Bearer ' + token;
   const res = await fetch(API + path, { ...options, headers });
   const json = await res.json();
-  if (!res.ok) throw new Error(json.message || 'Request failed');
+  if (!res.ok) {
+    const err = new Error(json.message || 'Request failed');
+    err.status = res.status;
+    throw err;
+  }
   return json.data;
 }
 
@@ -492,10 +496,14 @@ async function init() {
   bindLogin();
   if (loadStoredAdmin()) {
     try {
-      await api('/admin/stats');
       await bootAdminScreen();
-    } catch {
-      clearAdmin();
+      await api('/admin/stats');
+    } catch (err) {
+      if (err && err.status === 401) {
+        clearAdmin();
+      } else {
+        await bootAdminScreen();
+      }
     }
   }
 }
